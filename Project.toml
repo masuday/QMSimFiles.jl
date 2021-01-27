@@ -1,10 +1,17 @@
 name = "QMSimData"
-uuid = "62431b32-dd41-4b4a-a812-2a777c7bd32e"
+uuid = "1e04daf1-5263-4298-8d88-2487c5ff7e2f"
 authors = ["Yutaka Masuda <yutaka@uga.edu>"]
 version = "0.1.0"
 
+[deps]
+Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
+HDF5 = "f67ccb44-e63f-5c2f-98bd-6dc0ccc4ba2f"
+Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
+
 [compat]
 julia = "1"
+Distributions = "0.24"
+HDF5 = "0.15"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"

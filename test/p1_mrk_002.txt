@@ -1,0 +1,5 @@
+ID      Genotypes (0 = a1,a1; 2 = a2,a2; 3 = a1,a2; 4 = a2,a1; 5 = missing; The first allele is paternal and the second allele is maternal) ...
+1      42000004004
+2      42000003030
+3      22220004420
+4      20030003030

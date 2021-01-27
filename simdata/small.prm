@@ -1,0 +1,90 @@
+/*******************************
+ **     Global parameters     **
+ *******************************/
+title = "Example 6 - Historical bottleneck";
+nrep  = 1;                    //Number of replicates
+h2    = 0.2;                  //Heritability
+qtlh2 = 0.2;                  //QTL heritability
+phvar = 1.0;                  //Phenotypic variance
+seed = "small.seed";
+
+/*******************************
+ **   Historical population   **
+ *******************************/
+begin_hp;
+   hg_size = 1000 [0]          //Size of the historical generations
+              200 [70]
+              200 [80]
+              420 [100];
+   nmlhg   = 3;               //Number of males in the last generation
+end_hp;
+
+/*******************************
+ **        Populations        **
+ *******************************/
+begin_pop = "p1";
+   begin_founder;
+      male   [n =  2, pop = "hp"];
+      female [n =  2, pop = "hp"];
+   end_founder;
+   ls  = 1;                   //Litter size
+   pmp = 0.5 /fix;            //Proportion of male progeny
+   ng  = 0;                   //Number of generations
+   begin_popoutput;
+        data;
+        genotype /snp_code /gen 0;
+        allele_freq /gen 0;
+   end_popoutput;
+end_pop;
+
+/*******************************
+ **          Genome           **
+ *******************************/
+begin_genome;
+   begin_chr = 1;
+      chrlen = 100;           //Chromosome length
+      nmloci = 4;           //Number of markers
+      mpos   = rnd;           //Marker positions
+      nma    = all 2;         //Number of marker alleles
+      maf    = rnd;           //Marker allele frequencies
+      nqloci = 3;            //Number of QTL
+      qpos   = rnd;           //QTL positions
+      nqa    = rnd 2 3 4;     //Number of QTL alleles
+      qaf    = rnd;           //QTL allele frequencies
+      qae    = rndg 0.4;      //QTL allele effects
+   end_chr;
+   begin_chr = 1;
+      chrlen = 100;           //Chromosome length
+      nmloci = 3;           //Number of markers
+      mpos   = rnd;           //Marker positions
+      nma    = all 2;         //Number of marker alleles
+      maf    = rnd;           //Marker allele frequencies
+      nqloci = 4;            //Number of QTL
+      qpos   = rnd;           //QTL positions
+      nqa    = rnd 2 3 4;     //Number of QTL alleles
+      qaf    = rnd;           //QTL allele frequencies
+      qae    = rndg 0.4;      //QTL allele effects
+   end_chr;
+   begin_chr = 1;
+      chrlen = 100;           //Chromosome length
+      nmloci = 4;           //Number of markers
+      mpos   = rnd;           //Marker positions
+      nma    = all 2;         //Number of marker alleles
+      maf    = rnd;           //Marker allele frequencies
+      nqloci = 2;            //Number of QTL
+      qpos   = rnd;           //QTL positions
+      nqa    = rnd 2 3 4;     //Number of QTL alleles
+      qaf    = rnd;           //QTL allele frequencies
+      qae    = rndg 0.4;      //QTL allele effects
+   end_chr;
+end_genome;
+
+/*******************************
+ **       Output options      **
+ *******************************/
+begin_output;
+   allele_effect;
+   linkage_map;
+   hp_stat;
+end_output;
+
