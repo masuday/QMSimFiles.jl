@@ -307,6 +307,19 @@ end
    add_qmsim_individual_hdf5(g.map, hdf5file, g.individual[1])
    added = QMSimData.read_qmsim_individual_hdf5(g.map,hdf5file,5)
    @test added == g.individual[1]
+
+
+   # empty hdf5 only with map
+   hdf5file2 = tempname()
+   @info "temporary HDF5 file: $(hdf5file2)"
+   create_qmsim_map_hdf5(g.map, hdf5file2)
+
+   saved_map = read_qmsim_map_hdf5(hdf5file2)
+   @test saved_map == g.map
+
+   add_qmsim_individual_hdf5(g.map, hdf5file2, g.individual[1])
+   added = QMSimData.read_qmsim_individual_hdf5(g.map,hdf5file2,1)
+   @test added == g.individual[1]
 end
 
 @testset "export to blupf90" begin

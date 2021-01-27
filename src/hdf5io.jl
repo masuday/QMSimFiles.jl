@@ -44,6 +44,17 @@ function save_qmsim_data_hdf5(pop,hdf5file)
 end
 
 """
+    create_qmsim_map_hdf5(map,hdf5file)
+
+Create an HDF5 file with `map`.
+A dataset for genotypes will be empty
+"""
+function create_qmsim_map_hdf5(map,hdf5file)
+   pop = QMSimPopulationGenome(map,Vector{QMSimIndividualGenome}(undef,0))
+   save_qmsim_data_hdf5(pop,hdf5file)
+end
+
+"""
     add_qmsim_individual_hdf5(map,hdf5file)
 
 Adds a genotyped individual to pre-created HDF5 file.
@@ -57,7 +68,7 @@ function add_qmsim_individual_hdf5(map,hdf5file,individual)
       (dims,max_dims) = HDF5.get_extent_dims(dset)
       if nind>=dims[2]
          # doubled size
-         HDF5.set_extent_dims(dset, (packedsz,dims[2]*2))
+         HDF5.set_extent_dims(dset, (packedsz,max(10,dims[2])*2))
       end
       packed = zeros(Int8,packedsz)
       pack_genome!(map, individual, packed)
