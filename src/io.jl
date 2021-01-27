@@ -371,3 +371,39 @@ function read_qmsim_data(snpmapfile,qtlmapfile,qtleffectfile,snpfile,qtlfile)
    genotypes = read_genotypes(snpfile,qtlfile,gmap)
    return QMSimPopulationGenome(gmap, genotypes)
 end
+
+"""
+    export_qmsim_individual_blupf90(map,id,individual,snpfile; append=true)
+
+Export individual genotypes to a text file, `snpfile` with an integer code `id`, using a format supported by BLUPF90.
+If the file does not exist, the function creates a new file.
+If there is the same file name as `snpfile`, the funtion appends the data to existing file by default.
+If you want to recreate the file, please remove the file before calling this function, or use `append=false`.
+"""
+function export_qmsim_individual_blupf90(gmap,id,individual,snpfile; append=true)
+   # existing file
+   if !append && isfile(snpfile)
+      rm(snpfile,force=true)
+   end
+   # append
+   nSNP = gmap.totalSNP
+   open(snpfile,append=true) do io
+      packed = pack_markrs(gmap,individual) .+ UInt8(48)
+      write(io,@sprintf("%-8d",id)*String(packed)*"\n")
+   end
+end
+
+# for BLUPF90 output
+function pack_markrs(gmap::QMSimMap,individual::QMSimIndividualGenome)
+   # storage
+   packed = Vector{UInt8}(undef,gmap.totalSNP)
+   fst = 1
+   lst = 0
+   for i in 1:gmap.nchr
+      fst = lst + 1
+      lst = fst + gmap.chr[i].nSNP - 1
+      packed[fst:lst] = individual.chr[i].gp[ gmap.chr[i].seqQTL .==0 ]
+      packed[fst:lst] .+= individual.chr[i].gm[ gmap.chr[i].seqQTL .==0 ]
+   end
+   return packed
+end

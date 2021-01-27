@@ -46,7 +46,8 @@ import Base: ==
 export QMSimChromosomeMap, QMSimMap, QMSimChromosomeGenome, QMSimPopulationGenome
 export read_maps, read_genotypes, get_true_breeding_value, read_qmsim_data, 
        save_qmsim_data_hdf5, read_qmsim_map_hdf5, read_qmsim_data_hdf5,
-       read_qmsim_individual_hdf5, add_qmsim_individual_hdf5
+       read_qmsim_individual_hdf5, add_qmsim_individual_hdf5,
+       export_qmsim_individual_blupf90
 export mating
 
 include("io.jl")

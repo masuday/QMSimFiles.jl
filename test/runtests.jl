@@ -308,3 +308,27 @@ end
    added = QMSimData.read_qmsim_individual_hdf5(g.map,hdf5file,5)
    @test added == g.individual[1]
 end
+
+@testset "export to blupf90" begin
+   g = read_qmsim_data(snpmap1,qtlmap1,qtleff1,snpdata2,qtldata1)
+   @test String( QMSimData.pack_markrs(g.map,g.individual[2]) .+ UInt8(48)) == "12000001010"
+   @test String( QMSimData.pack_markrs(g.map,g.individual[3]) .+ UInt8(48)) == "22220001120"
+
+   snpfile = tempname()
+   @info "temporary text file: $(snpfile)"
+   if isfile(snpfile); rm(snpfile,force=true); end
+   export_qmsim_individual_blupf90(g.map, 2, g.individual[2], snpfile)
+   export_qmsim_individual_blupf90(g.map, 3, g.individual[3], snpfile)
+
+   @test countlines(snpfile)==2
+   open(snpfile,"r") do io
+      # individual 2
+      line = readline(io)
+      items = split(line)
+      @test items[1]=="2" && items[2]=="12000001010"
+      # individual 3
+      line = readline(io)
+      items = split(line)
+      @test items[1]=="3" && items[2]=="22220001120"
+   end
+end
