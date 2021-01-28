@@ -177,8 +177,8 @@ function read_genotypes(snpfile,qtlfile,gmap)
    # qtl data for individual k
    k = 0
    use_snpcode = is_snpcode_file(snpfile,gmap.totalSNP)
-   offset = get_leading_width(snpfile)
    if use_snpcode
+      offset = get_leading_width_snpcode(snpfile)
       open(snpfile,"r") do io
          line = readline(io)
          while !eof(io)
@@ -192,6 +192,7 @@ function read_genotypes(snpfile,qtlfile,gmap)
          end
       end
    else
+      offset = get_leading_width_standard(snpfile)
       open(snpfile,"r") do io
          line = readline(io)
          while !eof(io)
@@ -208,7 +209,7 @@ function read_genotypes(snpfile,qtlfile,gmap)
 
    # qtl data for individual k
    k = 0
-   offset = function get_leading_width(qtlfile)
+   offset = get_leading_width_standard(qtlfile)
    open(qtlfile,"r") do io
       line = readline(io)
       while !eof(io)
@@ -276,12 +277,26 @@ function is_snpcode_file(snpfile,totalSNP)
    end
 end
 
-function get_leading_width(snpfile)
+function get_leading_width_snpcode(snpfile)
    open(snpfile,"r") do io
       line = readline(io)
       while !eof(io)
          line = readline(io)
-         if line[8:8]==" "
+         if line[8]==' '
+            return 8   # v2
+         else
+            return 7   # v1
+         end
+      end
+   end
+end
+
+function get_leading_width_standard(file)
+   open(file,"r") do io
+      line = readline(io)
+      while !eof(io)
+         line = readline(io)
+         if line[9]==' '
             return 8   # v2
          else
             return 7   # v1
