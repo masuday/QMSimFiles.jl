@@ -177,8 +177,8 @@ function read_genotypes(snpfile,qtlfile,gmap)
    # qtl data for individual k
    k = 0
    use_snpcode = is_snpcode_file(snpfile,gmap.totalSNP)
+   offset = get_leading_width(snpfile)
    if use_snpcode
-      offset = get_leading_width(snpfile)
       open(snpfile,"r") do io
          line = readline(io)
          while !eof(io)
@@ -197,7 +197,7 @@ function read_genotypes(snpfile,qtlfile,gmap)
          while !eof(io)
             k = k + 1
             line = readline(io)
-            text_to_code!(line,gmap.totalSNP,snp)
+            text_to_code!(line,gmap.totalSNP,snp,offset)
             # snp code to haplotypes
             chromosome_set = generate_chromosome_set(gmap)
             convert_snpdata_to_haplotype!(snp,gmap,chromosome_set)
@@ -208,11 +208,12 @@ function read_genotypes(snpfile,qtlfile,gmap)
 
    # qtl data for individual k
    k = 0
+   offset = function get_leading_width(qtlfile)
    open(qtlfile,"r") do io
       line = readline(io)
       while !eof(io)
          line = readline(io)
-         text_to_code!(line,gmap.totalQTL,qtl)
+         text_to_code!(line,gmap.totalQTL,qtl,offset)
          # qtl code to haplotypes
          k = k + 1
          convert_qtldata_to_haplotype!(qtl,gmap,g[k])
@@ -237,10 +238,10 @@ function generate_chromosome_set(gmap)
    return chromosome_set
 end
 
-function text_to_code!(line,totalSNPQTL,snpqtl)
-   # <---7---><-1-><-[1]-><-1-><-[1]->
+function text_to_code!(line,totalSNPQTL,snpqtl,offset)
+   # <---7/8---><-1-><-[1]-><-1-><-[1]->
    for i in 1:totalSNPQTL*2
-      k = 7 + (i-1)*2 + 1 + 1
+      k = offset + (i-1)*2 + 1 + 1
       snpqtl[i] = parse(Int8,line[k:k])
    end
    return nothing

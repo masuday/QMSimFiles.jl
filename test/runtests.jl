@@ -114,7 +114,7 @@ end
    # for SNP (standard)
    stext = "2       2 1 2 2 1 1 1 1 1 1 1 1 1 1 1 2 1 1 1 2 1 1"
    snp = zeros(Int8,gmap.totalSNP*2)
-   QMSimData.text_to_code!(stext,gmap.totalSNP,snp)
+   QMSimData.text_to_code!(stext,gmap.totalSNP,snp,7)
    @test all( snp .== [2, 1, 2, 2, 1, 1, 1, 1,   1, 1, 1, 1, 1, 1,   1, 2, 1, 1, 1, 2, 1, 1] )
 
    chromosome_set1 = QMSimData.generate_chromosome_set(gmap)
@@ -144,7 +144,7 @@ end
    # for QTL
    qtext = "2       2 2 2 4 4 1 1 1 2 1 2 2 2 2 2 1 1 2"
    qtl = zeros(Int8,gmap.totalQTL*2)
-   QMSimData.text_to_code!(qtext,gmap.totalQTL,qtl)
+   QMSimData.text_to_code!(qtext,gmap.totalQTL,qtl,7)
    @test all( qtl .== [2, 2, 2, 4, 4, 1,   1, 1, 2, 1, 2, 2, 2, 2,   2, 1, 1, 2] )
 
    QMSimData.convert_qtldata_to_haplotype!(qtl,gmap,chromosome_set2)
