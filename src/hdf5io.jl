@@ -180,7 +180,7 @@ Read the enture data from `hdf5file`, which has been created by `save_qmsim_data
 """
 function read_qmsim_data_hdf5(hdf5file)
    gmap = read_qmsim_map_hdf5(hdf5file)
-   individual = QMSimData.read_qmsim_all_genotypes_hdf5(gmap,hdf5file)
+   individual = QMSimFiles.read_qmsim_all_genotypes_hdf5(gmap,hdf5file)
    return QMSimPopulationGenome(gmap,individual)
 end
 
