@@ -129,7 +129,7 @@ end
    # for SNP (snp_code)
    ctext = "2      42000003030"
    snp_code = zeros(Int8,gmap.totalSNP)
-   QMSimData.text_to_snpcode!(ctext,gmap.totalSNP,snp_code)
+   QMSimData.text_to_snpcode!(ctext,gmap.totalSNP,snp_code,7)
    @test all( snp_code .== [4,2,0,0, 0,0,0, 3,0,3,0] )
 
    chromosome_set2 = QMSimData.generate_chromosome_set(gmap)

@@ -178,12 +178,13 @@ function read_genotypes(snpfile,qtlfile,gmap)
    k = 0
    use_snpcode = is_snpcode_file(snpfile,gmap.totalSNP)
    if use_snpcode
+      offset = get_leading_width(snpfile)
       open(snpfile,"r") do io
          line = readline(io)
          while !eof(io)
             k = k + 1
             line = readline(io)
-            text_to_snpcode!(line,gmap.totalSNP,snp)
+            text_to_snpcode!(line,gmap.totalSNP,snp,offset)
             # snp code to haplotypes
             chromosome_set = generate_chromosome_set(gmap)
             convert_snpcode_to_haplotype!(snp,gmap,chromosome_set)
@@ -245,10 +246,11 @@ function text_to_code!(line,totalSNPQTL,snpqtl)
    return nothing
 end
 
-function text_to_snpcode!(line,totalSNPQTL,snp)
-   # <---7---><-[1]-><-[1]->
+# offset = 7 for v1, or 8 for v2
+function text_to_snpcode!(line,totalSNPQTL,snp,offset)
+   # <---7/8---><-[1]-><-[1]->
    for i in 1:totalSNPQTL
-      k = 7 + i
+      k = offset + i
       snp[i] = parse(Int8,line[k:k])
    end
    return nothing
@@ -266,10 +268,24 @@ function is_snpcode_file(snpfile,totalSNP)
    end
    if n<1
       error("file '$(snpfile)' not valid")
-   elseif n > 7 + totalSNP
+   elseif n > 8 + totalSNP
       return false
    else
       return true
+   end
+end
+
+function get_leading_width(snpfile)
+   open(snpfile,"r") do io
+      line = readline(io)
+      while !eof(io)
+         line = readline(io)
+         if line[8:8]==" "
+            return 8   # v2
+         else
+            return 7   # v1
+         end
+      end
    end
 end
 
