@@ -1,4 +1,4 @@
-module QMSimData
+module QMSimFiles
 
 using Printf
 using Distributions
