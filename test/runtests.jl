@@ -9,34 +9,34 @@ snpdata2 = "p1_mrk_002.txt"   # saved as /snp_code
 qtldata1 = "p1_qtl_001.txt"
 
 @testset "get_number_of_chromosomes" begin
-   nchr = QMSimData.get_number_of_chromosomes(snpmap1)
+   nchr = QMSimFiles.get_number_of_chromosomes(snpmap1)
    @test nchr == 3
-   nchr = QMSimData.get_number_of_chromosomes(qtlmap1)
+   nchr = QMSimFiles.get_number_of_chromosomes(qtlmap1)
    @test nchr == 3
 end
 
 @testset "get_number_of_loci" begin
-   nchr = QMSimData.get_number_of_chromosomes(snpmap1)
-   nloci = QMSimData.get_number_of_loci(snpmap1,nchr)
+   nchr = QMSimFiles.get_number_of_chromosomes(snpmap1)
+   nloci = QMSimFiles.get_number_of_loci(snpmap1,nchr)
    @test all( nloci == [4,3,4] )
-   nchr = QMSimData.get_number_of_chromosomes(qtlmap1)
-   nloci = QMSimData.get_number_of_loci(qtlmap1,nchr)
+   nchr = QMSimFiles.get_number_of_chromosomes(qtlmap1)
+   nloci = QMSimFiles.get_number_of_loci(qtlmap1,nchr)
    @test all( nloci == [3,4,2] )
 end
 
 @testset "get_number_of_QTL_allele" begin
-   maxna,maxAllele = QMSimData.get_number_of_QTL_allele(qtleff1,3)
+   maxna,maxAllele = QMSimFiles.get_number_of_QTL_allele(qtleff1,3)
    @test maxna == 4
    @test all( maxAllele .== [4,4,3] )
 end
 
 @testset "load_SNP_QTL_maps!" begin
-   maxna,maxAllele = QMSimData.get_number_of_QTL_allele(qtleff1,3)
-   maps = Vector{QMSimData.QMSimChromosomeMap}(undef,3)
-   maps[1] = QMSimData.QMSimChromosomeMap(7,4,3,zeros(Int,7),zeros(Float64,7),maxAllele[1],zeros(Int,maxAllele[1]),zeros(Float64,maxAllele[1],3))
-   maps[2] = QMSimData.QMSimChromosomeMap(7,3,4,zeros(Int,7),zeros(Float64,7),maxAllele[2],zeros(Int,maxAllele[2]),zeros(Float64,maxAllele[2],4))
-   maps[3] = QMSimData.QMSimChromosomeMap(6,4,2,zeros(Int,6),zeros(Float64,6),maxAllele[3],zeros(Int,maxAllele[3]),zeros(Float64,maxAllele[3],2))
-   QMSimData.load_SNP_QTL_maps!(snpmap1,qtlmap1,maps)
+   maxna,maxAllele = QMSimFiles.get_number_of_QTL_allele(qtleff1,3)
+   maps = Vector{QMSimFiles.QMSimChromosomeMap}(undef,3)
+   maps[1] = QMSimFiles.QMSimChromosomeMap(7,4,3,zeros(Int,7),zeros(Float64,7),maxAllele[1],zeros(Int,maxAllele[1]),zeros(Float64,maxAllele[1],3))
+   maps[2] = QMSimFiles.QMSimChromosomeMap(7,3,4,zeros(Int,7),zeros(Float64,7),maxAllele[2],zeros(Int,maxAllele[2]),zeros(Float64,maxAllele[2],4))
+   maps[3] = QMSimFiles.QMSimChromosomeMap(6,4,2,zeros(Int,6),zeros(Float64,6),maxAllele[3],zeros(Int,maxAllele[3]),zeros(Float64,maxAllele[3],2))
+   QMSimFiles.load_SNP_QTL_maps!(snpmap1,qtlmap1,maps)
    @test all( maps[1].seqQTL .== [0,0,0,0,1,2,3] )
    @test all( maps[2].seqQTL .== [0,0,0,4,5,6,7] )
    @test all( maps[3].seqQTL .== [0,0,0,0,8,9] )
@@ -45,9 +45,9 @@ end
    @test all( maps[3].pos .≈ [25.60614,86.19237,91.47393,98.69095, 14.34842,24.60904] )
    omaps = deepcopy(maps)
 
-   QMSimData.sort_by_position!(maps[1].pos, maps[1].seqQTL)
-   QMSimData.sort_by_position!(maps[2].pos, maps[2].seqQTL)
-   QMSimData.sort_by_position!(maps[3].pos, maps[3].seqQTL)
+   QMSimFiles.sort_by_position!(maps[1].pos, maps[1].seqQTL)
+   QMSimFiles.sort_by_position!(maps[2].pos, maps[2].seqQTL)
+   QMSimFiles.sort_by_position!(maps[3].pos, maps[3].seqQTL)
    perm1 = [1,5,6,2,3,4,7]
    perm2 = [1,2,4,5,3,6,7]
    perm3 = [5,6,1,2,3,4]
@@ -60,17 +60,17 @@ end
 end
 
 @testset "load_QTL_effect! and read_maps" begin
-   maxna,maxAllele = QMSimData.get_number_of_QTL_allele(qtleff1,3)
-   maps = Vector{QMSimData.QMSimChromosomeMap}(undef,3)
-   maps[1] = QMSimData.QMSimChromosomeMap(7,4,3,zeros(Int,7),zeros(Float64,7),maxAllele[1],zeros(Int,3),zeros(Float64,maxAllele[1],3))
-   maps[2] = QMSimData.QMSimChromosomeMap(7,3,4,zeros(Int,7),zeros(Float64,7),maxAllele[2],zeros(Int,4),zeros(Float64,maxAllele[2],4))
-   maps[3] = QMSimData.QMSimChromosomeMap(6,4,2,zeros(Int,6),zeros(Float64,6),maxAllele[3],zeros(Int,2),zeros(Float64,maxAllele[3],2))
-   QMSimData.load_SNP_QTL_maps!(snpmap1,qtlmap1,maps)
-   QMSimData.sort_by_position!(maps[1].pos, maps[1].seqQTL)
-   QMSimData.sort_by_position!(maps[2].pos, maps[2].seqQTL)
-   QMSimData.sort_by_position!(maps[3].pos, maps[3].seqQTL)
+   maxna,maxAllele = QMSimFiles.get_number_of_QTL_allele(qtleff1,3)
+   maps = Vector{QMSimFiles.QMSimChromosomeMap}(undef,3)
+   maps[1] = QMSimFiles.QMSimChromosomeMap(7,4,3,zeros(Int,7),zeros(Float64,7),maxAllele[1],zeros(Int,3),zeros(Float64,maxAllele[1],3))
+   maps[2] = QMSimFiles.QMSimChromosomeMap(7,3,4,zeros(Int,7),zeros(Float64,7),maxAllele[2],zeros(Int,4),zeros(Float64,maxAllele[2],4))
+   maps[3] = QMSimFiles.QMSimChromosomeMap(6,4,2,zeros(Int,6),zeros(Float64,6),maxAllele[3],zeros(Int,2),zeros(Float64,maxAllele[3],2))
+   QMSimFiles.load_SNP_QTL_maps!(snpmap1,qtlmap1,maps)
+   QMSimFiles.sort_by_position!(maps[1].pos, maps[1].seqQTL)
+   QMSimFiles.sort_by_position!(maps[2].pos, maps[2].seqQTL)
+   QMSimFiles.sort_by_position!(maps[3].pos, maps[3].seqQTL)
 
-   QMSimData.load_QTL_effect!(qtleff1,maps)
+   QMSimFiles.load_QTL_effect!(qtleff1,maps)
    @test all( maps[1].naQTL .== [3,4,4] )
    @test all( maps[2].naQTL .== [3,4,2,2] )
    @test all( maps[3].naQTL .== [3,3] )
@@ -102,23 +102,23 @@ end
 
 @testset "generate_chromosome_set" begin
    gmap = read_maps(snpmap1,qtlmap1,qtleff1)
-   chromosome_set = QMSimData.generate_chromosome_set(gmap)
+   chromosome_set = QMSimFiles.generate_chromosome_set(gmap)
    @test length(chromosome_set)==gmap.nchr
 end
 
 @testset "parse SNP/QTL data" begin
    gmap = read_maps(snpmap1,qtlmap1,qtleff1)
-   @test QMSimData.is_snpcode_file(snpdata1,gmap.totalSNP)==false
-   @test QMSimData.is_snpcode_file(snpdata2,gmap.totalSNP)==true
+   @test QMSimFiles.is_snpcode_file(snpdata1,gmap.totalSNP)==false
+   @test QMSimFiles.is_snpcode_file(snpdata2,gmap.totalSNP)==true
 
    # for SNP (standard)
    stext = "2       2 1 2 2 1 1 1 1 1 1 1 1 1 1 1 2 1 1 1 2 1 1"
    snp = zeros(Int8,gmap.totalSNP*2)
-   QMSimData.text_to_code!(stext,gmap.totalSNP,snp,7)
+   QMSimFiles.text_to_code!(stext,gmap.totalSNP,snp,7)
    @test all( snp .== [2, 1, 2, 2, 1, 1, 1, 1,   1, 1, 1, 1, 1, 1,   1, 2, 1, 1, 1, 2, 1, 1] )
 
-   chromosome_set1 = QMSimData.generate_chromosome_set(gmap)
-   QMSimData.convert_snpdata_to_haplotype!(snp,gmap,chromosome_set1)
+   chromosome_set1 = QMSimFiles.generate_chromosome_set(gmap)
+   QMSimFiles.convert_snpdata_to_haplotype!(snp,gmap,chromosome_set1)
    @test all( chromosome_set1[1].gp[findall(x->gmap.chr[1].seqQTL[x]==0,1:gmap.chr[1].nLoci)] .== [1,1,0,0] )
    @test all( chromosome_set1[1].gm[findall(x->gmap.chr[1].seqQTL[x]==0,1:gmap.chr[1].nLoci)] .== [0,1,0,0] )
    @test all( chromosome_set1[2].gp[findall(x->gmap.chr[2].seqQTL[x]==0,1:gmap.chr[2].nLoci)] .== [0,0,0] )
@@ -129,11 +129,11 @@ end
    # for SNP (snp_code)
    ctext = "2      42000003030"
    snp_code = zeros(Int8,gmap.totalSNP)
-   QMSimData.text_to_snpcode!(ctext,gmap.totalSNP,snp_code,7)
+   QMSimFiles.text_to_snpcode!(ctext,gmap.totalSNP,snp_code,7)
    @test all( snp_code .== [4,2,0,0, 0,0,0, 3,0,3,0] )
 
-   chromosome_set2 = QMSimData.generate_chromosome_set(gmap)
-   QMSimData.convert_snpcode_to_haplotype!(snp_code,gmap,chromosome_set2)
+   chromosome_set2 = QMSimFiles.generate_chromosome_set(gmap)
+   QMSimFiles.convert_snpcode_to_haplotype!(snp_code,gmap,chromosome_set2)
    @test all( chromosome_set2[1].gp .== chromosome_set1[1].gp )
    @test all( chromosome_set2[1].gm .== chromosome_set1[1].gm )
    @test all( chromosome_set2[2].gp .== chromosome_set1[2].gp )
@@ -144,10 +144,10 @@ end
    # for QTL
    qtext = "2       2 2 2 4 4 1 1 1 2 1 2 2 2 2 2 1 1 2"
    qtl = zeros(Int8,gmap.totalQTL*2)
-   QMSimData.text_to_code!(qtext,gmap.totalQTL,qtl,7)
+   QMSimFiles.text_to_code!(qtext,gmap.totalQTL,qtl,7)
    @test all( qtl .== [2, 2, 2, 4, 4, 1,   1, 1, 2, 1, 2, 2, 2, 2,   2, 1, 1, 2] )
 
-   QMSimData.convert_qtldata_to_haplotype!(qtl,gmap,chromosome_set2)
+   QMSimFiles.convert_qtldata_to_haplotype!(qtl,gmap,chromosome_set2)
    @test all( chromosome_set2[1].gp[findall(x->gmap.chr[1].seqQTL[x]>0,1:gmap.chr[1].nLoci)] .== [2,2,4] )
    @test all( chromosome_set2[1].gm[findall(x->gmap.chr[1].seqQTL[x]>0,1:gmap.chr[1].nLoci)] .== [2,4,1] )
    @test all( chromosome_set2[2].gp[findall(x->gmap.chr[2].seqQTL[x]>0,1:gmap.chr[2].nLoci)] .== [1,2,2,2] )
@@ -177,7 +177,7 @@ end
    g = read_qmsim_data(snpmap1,qtlmap1,qtleff1,snpdata2,qtldata1)
    chr = g.map.chr[1]
    refpos = [5.9936, 23.76397, 28.15399, 46.98708, 71.46866, 78.57678, 89.8113]
-   n = QMSimData.number_of_crosses(chr.pos[end])
+   n = QMSimFiles.number_of_crosses(chr.pos[end])
    @test (0 <= n) && (n <= 100)
 end
 
@@ -187,8 +187,8 @@ end
    ntests = 10
    for i=1:ntests
       chrlen = chr.pos[end]
-      ncross = QMSimData.number_of_crosses(chrlen) + 1
-      (ncross,gameteid,loccross) = QMSimData.location_of_crossover(chrlen,chr.pos,ncross)
+      ncross = QMSimFiles.number_of_crosses(chrlen) + 1
+      (ncross,gameteid,loccross) = QMSimFiles.location_of_crossover(chrlen,chr.pos,ncross)
       if ncross>0
          @test issorted(loccross) && (loccross[1]>=0) && (loccross[end]<=chrlen) && length(loccross)==ncross
          @test all( map(x -> ((gameteid[x][1] in [1,2]) && gameteid[x][2] in [3,4]), 1:ncross ) ) && length(gameteid)==ncross
@@ -197,22 +197,22 @@ end
    # adjustment to remove double cross etc
    gameteid = [(1,3),(1,3),(1,4),(1,4),(2,3),(2,3),(2,4),(2,4)]
    loccross = [1.0,  2.0,  3.0,  4.0,  5.0,  6.0,  7.0,  8.0]
-   (ncross2,gameteid2,loccross2) = QMSimData.adjusted_location_of_crossover(gameteid,loccross)
+   (ncross2,gameteid2,loccross2) = QMSimFiles.adjusted_location_of_crossover(gameteid,loccross)
    @test ncross2==0
 
    gameteid = [(1,3),(1,3),(1,4),(1,4),(1,4),(1,4),(2,4),(2,4)]
    loccross = [1.0,  2.0,  3.0,  4.0,  5.0,  6.0,  7.0,  8.0]
-   (ncross2,gameteid2,loccross2) = QMSimData.adjusted_location_of_crossover(gameteid,loccross)
+   (ncross2,gameteid2,loccross2) = QMSimFiles.adjusted_location_of_crossover(gameteid,loccross)
    @test ncross2==0
 
    gameteid = [(2,3),(1,3),(1,4),(1,3),(2,3),(1,3),(2,4),(1,4),(2,4)]
    loccross = [1.0,  2.0,  3.0,  4.0,  5.0,  6.0,  7.0,  8.0,  9.0]
-   (ncross2,gameteid2,loccross2) = QMSimData.adjusted_location_of_crossover(gameteid,loccross)
+   (ncross2,gameteid2,loccross2) = QMSimFiles.adjusted_location_of_crossover(gameteid,loccross)
    @test ncross2==1
 
    gameteid = [(2,3),(1,3),(1,4),(1,3),(2,3),(1,3),(2,4),(1,4),(2,4),(2,3),(1,4)]
    loccross = [1.0,  2.0,  3.0,  4.0,  5.0,  6.0,  7.0,  8.0,  9.0,  10.0, 11.0]
-   (ncross2,gameteid2,loccross2) = QMSimData.adjusted_location_of_crossover(gameteid,loccross)
+   (ncross2,gameteid2,loccross2) = QMSimFiles.adjusted_location_of_crossover(gameteid,loccross)
    @test ncross2==3
 end
 
@@ -229,13 +229,13 @@ end
    ncross = 1
    gameteid = [(1,3)]
    loccross = [3]
-   ga = QMSimData.generate_gamete_with_crossover(gameteid,loccross,1,gp,gm)
+   ga = QMSimFiles.generate_gamete_with_crossover(gameteid,loccross,1,gp,gm)
    @test all( ga .== [1,3,4,0,0,1,4] )
 
    ncross = 2
    gameteid = [(1,3),(1,4)]
    loccross = [3,6]
-   ga = QMSimData.generate_gamete_with_crossover(gameteid,loccross,1,gp,gm)
+   ga = QMSimFiles.generate_gamete_with_crossover(gameteid,loccross,1,gp,gm)
    @test all( ga .== [1,3,4,0,0,1,4] )
 end
 
@@ -267,13 +267,13 @@ end
          ref_packed = [ref_packed; g.individual[k].chr[i].gp]
          ref_packed = [ref_packed; g.individual[k].chr[i].gm]
       end
-      ind_packed = QMSimData.pack_genome(g.map,g.individual[k])
+      ind_packed = QMSimFiles.pack_genome(g.map,g.individual[k])
       @test all( ind_packed .== ref_packed )
-      packed = QMSimData.pack_genome(g.map,g.individual[k].chr)
+      packed = QMSimFiles.pack_genome(g.map,g.individual[k].chr)
       @test all( packed .== ref_packed )
 
       # unpack
-      chromosome_set = QMSimData.unpack_genome(g.map,packed)
+      chromosome_set = QMSimFiles.unpack_genome(g.map,packed)
       @test all( chromosome_set == g.individual[k].chr )
    end
 end
@@ -292,12 +292,12 @@ end
 
    # particular individual
    for i=1:length(g.individual)
-      individual = QMSimData.read_qmsim_individual_hdf5(g.map,hdf5file,i)
+      individual = QMSimFiles.read_qmsim_individual_hdf5(g.map,hdf5file,i)
       @test individual == g.individual[i]
    end
 
    # all genotypes
-   genotypes = QMSimData.read_qmsim_all_genotypes_hdf5(g.map,hdf5file)
+   genotypes = QMSimFiles.read_qmsim_all_genotypes_hdf5(g.map,hdf5file)
    @test g == QMSimPopulationGenome(g.map,genotypes)
 
    # whole data
@@ -305,7 +305,7 @@ end
 
    # added individual
    add_qmsim_individual_hdf5(g.map, hdf5file, g.individual[1])
-   added = QMSimData.read_qmsim_individual_hdf5(g.map,hdf5file,5)
+   added = QMSimFiles.read_qmsim_individual_hdf5(g.map,hdf5file,5)
    @test added == g.individual[1]
 
 
@@ -318,14 +318,14 @@ end
    @test saved_map == g.map
 
    add_qmsim_individual_hdf5(g.map, hdf5file2, g.individual[1])
-   added = QMSimData.read_qmsim_individual_hdf5(g.map,hdf5file2,1)
+   added = QMSimFiles.read_qmsim_individual_hdf5(g.map,hdf5file2,1)
    @test added == g.individual[1]
 end
 
 @testset "export to blupf90" begin
    g = read_qmsim_data(snpmap1,qtlmap1,qtleff1,snpdata2,qtldata1)
-   @test String( QMSimData.pack_markrs(g.map,g.individual[2]) .+ UInt8(48)) == "12000001010"
-   @test String( QMSimData.pack_markrs(g.map,g.individual[3]) .+ UInt8(48)) == "22220001120"
+   @test String( QMSimFiles.pack_markrs(g.map,g.individual[2]) .+ UInt8(48)) == "12000001010"
+   @test String( QMSimFiles.pack_markrs(g.map,g.individual[3]) .+ UInt8(48)) == "22220001120"
 
    snpfile = tempname()
    @info "temporary text file: $(snpfile)"
