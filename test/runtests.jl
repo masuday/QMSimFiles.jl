@@ -1,4 +1,4 @@
-using QMSimData
+using QMSimFiles
 using Test
 
 snpmap1 = "lm_mrk_001.txt"
