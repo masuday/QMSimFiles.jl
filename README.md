@@ -1,4 +1,4 @@
-# QMSimData
+# QMSimFiles
 
 ## Quick start
 
@@ -9,7 +9,7 @@ The current version handles only genotypes; there is no way to have phenotypes, 
 ## Examples
 
 ```julia
-using QMSimData
+using QMSimFiles
 
 # files simulated by QMSim
 snpmap  = "lm_mrk_001.txt"
