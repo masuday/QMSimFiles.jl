@@ -308,6 +308,8 @@ end
    added = QMSimFiles.read_qmsim_individual_hdf5(g.map,hdf5file,5)
    @test added == g.individual[1]
 
+   # size of saved genotypes
+   @test get_qmsim_genotype_size(hdf5file) == (5, g.map.totalSNP + g.map.totalQTL)
 
    # empty hdf5 only with map
    hdf5file2 = tempname()

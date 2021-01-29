@@ -184,8 +184,23 @@ function read_qmsim_data_hdf5(hdf5file)
    return QMSimPopulationGenome(gmap,individual)
 end
 
+"""
+    (nind,nloci) = get_qmsim_genotype_size(gmap,hdf5file)
 
-
+Get the number of individuals and loci.
+"""
+function get_qmsim_genotype_size(hdf5file)
+   nind = 0
+   ngen = 0
+   nloci = 0
+   h5open(hdf5file,"r") do fid
+      gr = fid["genome"]
+      packedsz = read(gr, "packedsz")
+      nind = read(gr, "nind")
+      (ngen,nloci) = size(gr["genotypes"])
+   end
+   return (nind,nloci)
+end
 
 function get_packed_genome_size(gmap)
    return 2*(gmap.totalSNP + gmap.totalQTL)
