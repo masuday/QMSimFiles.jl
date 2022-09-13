@@ -1,11 +1,13 @@
 # functions for io
 
 """
-    map = read_maps(snpmapfile,qtlmapfile,qtleffectfile)
+    map = read_maps(snpmapfile,qtlmapfile,qtleffectfile; ntr=0)
 
 Read three map and effect files, and create a single map object, `QMSimMap`.
+With `ntr>0`, it returns the map object with QTL effects of `ntr` traits.
+In this case, the QTL effects will be loaded for trait 1; zero QTL effects will be assigned to the other traits.
 """
-function read_maps(snpmapfile,qtlmapfile,qtleffectfile)
+function read_maps(snpmapfile,qtlmapfile,qtleffectfile; ntr=0)
    # number of chromosomes
    maxChrM = get_number_of_chromosomes(snpmapfile)
    maxChrQ = get_number_of_chromosomes(qtlmapfile)
@@ -24,7 +26,11 @@ function read_maps(snpmapfile,qtlmapfile,qtleffectfile)
    maps = Vector{QMSimChromosomeMap}(undef,maxChr)
    @inbounds for i in 1:maxChr
       na = maxAllele[i]
-      maps[i] = QMSimChromosomeMap(nLoci[i],nSNP[i],nQTL[i],zeros(Int,nLoci[i]),zeros(Float64,nLoci[i]),na,zeros(Int,nQTL[i]),zeros(Float64,na,nQTL[i]))
+      if ntr>0
+         maps[i] = QMSimChromosomeMap(nLoci[i],nSNP[i],nQTL[i],zeros(Int,nLoci[i]),zeros(Float64,nLoci[i]),na,zeros(Int,nQTL[i]),zeros(Float64,na,nQTL[i],ntr))
+      else
+         maps[i] = QMSimChromosomeMap(nLoci[i],nSNP[i],nQTL[i],zeros(Int,nLoci[i]),zeros(Float64,nLoci[i]),na,zeros(Int,nQTL[i]),zeros(Float64,na,nQTL[i]))
+      end
    end
 
    # read positions
@@ -410,7 +416,7 @@ function _get_true_breeding_value(gmap::QMSimMap,chromosome_set::Vector{QMSimChr
 end
 
 function _get_true_breeding_value_mt(gmap::QMSimMap,chromosome_set::Vector{QMSimChromosomeGenome})
-   ntr = ndims(gmap.chr[end].effQTL)
+   ntr = size(gmap.chr[end].effQTL,3)
    tbv = zeros(ntr)
    for t in 1:ntr
       for i in 1:gmap.nchr
@@ -420,8 +426,8 @@ function _get_true_breeding_value_mt(gmap::QMSimMap,chromosome_set::Vector{QMSim
             # QTL
             if gmap.chr[i].seqQTL[j]>0
                qlocus = qlocus + 1
-               tbv[t] = tbv + gmap.chr[i].effQTL[chromosome_set[i].gp[j],qlocus,t]
-               tbv[t] = tbv + gmap.chr[i].effQTL[chromosome_set[i].gm[j],qlocus,t]
+               tbv[t] = tbv[t] + gmap.chr[i].effQTL[chromosome_set[i].gp[j],qlocus,t]
+               tbv[t] = tbv[t] + gmap.chr[i].effQTL[chromosome_set[i].gm[j],qlocus,t]
             end
          end
       end
@@ -431,12 +437,12 @@ end
 
 
 """
-    g = read_qmsim_data(snpmapfile,qtlmapfile,qtleffectfile,snpfile,qtlfile)
+    g = read_qmsim_data(snpmapfile,qtlmapfile,qtleffectfile,snpfile,qtlfile; ntr=0)
 
 Read map, QTL effect, and genotype files to give a unified structure, `g::QMSimPopulationGenome`.
 """
-function read_qmsim_data(snpmapfile,qtlmapfile,qtleffectfile,snpfile,qtlfile)
-   gmap = read_maps(snpmapfile,qtlmapfile,qtleffectfile)
+function read_qmsim_data(snpmapfile,qtlmapfile,qtleffectfile,snpfile,qtlfile; ntr=0)
+   gmap = read_maps(snpmapfile,qtlmapfile,qtleffectfile, ntr=ntr)
    genotypes = read_genotypes(snpfile,qtlfile,gmap)
    return QMSimPopulationGenome(gmap, genotypes)
 end

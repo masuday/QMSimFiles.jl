@@ -100,6 +100,48 @@ end
    end
 end
 
+@testset "load_QTL_effect! and read_maps: MT" begin
+   ntr = 2
+   maxna,maxAllele = QMSimFiles.get_number_of_QTL_allele(qtleff1,3)
+   maps = Vector{QMSimFiles.QMSimChromosomeMap}(undef,3)
+   maps[1] = QMSimFiles.QMSimChromosomeMap(7,4,3,zeros(Int,7),zeros(Float64,7),maxAllele[1],zeros(Int,3),zeros(Float64,maxAllele[1],3,ntr))
+   maps[2] = QMSimFiles.QMSimChromosomeMap(7,3,4,zeros(Int,7),zeros(Float64,7),maxAllele[2],zeros(Int,4),zeros(Float64,maxAllele[2],4,ntr))
+   maps[3] = QMSimFiles.QMSimChromosomeMap(6,4,2,zeros(Int,6),zeros(Float64,6),maxAllele[3],zeros(Int,2),zeros(Float64,maxAllele[3],2,ntr))
+   QMSimFiles.load_SNP_QTL_maps!(snpmap1,qtlmap1,maps)
+   QMSimFiles.sort_by_position!(maps[1].pos, maps[1].seqQTL)
+   QMSimFiles.sort_by_position!(maps[2].pos, maps[2].seqQTL)
+   QMSimFiles.sort_by_position!(maps[3].pos, maps[3].seqQTL)
+
+   QMSimFiles.load_QTL_effect!(qtleff1,maps)
+   @test all( maps[1].naQTL .== [3,4,4] )
+   @test all( maps[2].naQTL .== [3,4,2,2] )
+   @test all( maps[3].naQTL .== [3,3] )
+   @test all( maps[1].effQTL[1:3,1,1] .≈ [-0.177111,-0.223061,0.071867] )
+   @test all( maps[1].effQTL[1:4,2,1] .≈ [0.034120,-0.053426,-0.032978,0.022941] )
+   @test all( maps[1].effQTL[1:4,3,1] .≈ [-0.010957,-0.001999,0.033815,-0.010451] )
+   @test all( maps[2].effQTL[1:3,1,1] .≈ [0.054960,-0.038202,-0.063630] )
+   @test all( maps[2].effQTL[1:4,2,1] .≈ [0.130199,0.137865,-0.455851,0.296964] )
+   @test all( maps[2].effQTL[1:2,3,1] .≈ [0.001240,-0.000023] )
+   @test all( maps[2].effQTL[1:2,4,1] .≈ [-0.071812,0.063439] )
+   @test all( maps[3].effQTL[1:3,1,1] .≈ [-0.020500,0.004283,-0.075465] )
+   @test all( maps[3].effQTL[1:3,2,1] .≈ [0.004419,-0.010919,0.021111] )
+
+   refmap = read_maps(snpmap1,qtlmap1,qtleff1)
+   @test refmap.nchr == 3
+   @test refmap.totalSNP == 11
+   @test refmap.totalQTL == 9
+   for i in 1:3
+      @test refmap.chr[i].nLoci == maps[i].nLoci
+      @test refmap.chr[i].nSNP == maps[i].nSNP
+      @test refmap.chr[i].nQTL == maps[i].nQTL
+      @test all( refmap.chr[i].seqQTL .== maps[i].seqQTL )
+      @test all( refmap.chr[i].pos .≈ maps[i].pos )
+      @test refmap.chr[i].maxAllele .== maps[i].maxAllele
+      @test all( refmap.chr[i].naQTL .== maps[i].naQTL )
+      @test all( refmap.chr[i].effQTL[:,:] .≈ maps[i].effQTL[:,:,1] )
+   end
+end
+
 @testset "generate_chromosome_set" begin
    gmap = read_maps(snpmap1,qtlmap1,qtleff1)
    chromosome_set = QMSimFiles.generate_chromosome_set(gmap)
@@ -168,6 +210,26 @@ end
    @test isapprox(g1[2].tbv, -0.015914, atol=1e-5)
    @test isapprox(g1[3].tbv, -0.137409, atol=1e-5)
    @test isapprox(g1[4].tbv, -0.242572, atol=1e-5)
+   for i=1:4
+      @test g1[i].tbv ≈ g2[i].tbv
+   end
+end
+
+@testset "parse SNP/QTL data: MT" begin
+   ntr = 2
+   gmap = read_maps(snpmap1,qtlmap1,qtleff1, ntr=ntr)
+
+   # general function
+   g1 = read_genotypes(snpdata1,qtldata1,gmap)
+   g2 = read_genotypes(snpdata2,qtldata1,gmap)
+   @test isapprox(g1[1].tbv[1], -0.412531, atol=1e-5)
+   @test isapprox(g1[2].tbv[1], -0.015914, atol=1e-5)
+   @test isapprox(g1[3].tbv[1], -0.137409, atol=1e-5)
+   @test isapprox(g1[4].tbv[1], -0.242572, atol=1e-5)
+   @test isapprox(g1[1].tbv[2], 0.0, atol=1e-5)
+   @test isapprox(g1[2].tbv[2], 0.0, atol=1e-5)
+   @test isapprox(g1[3].tbv[2], 0.0, atol=1e-5)
+   @test isapprox(g1[4].tbv[2], 0.0, atol=1e-5)
    for i=1:4
       @test g1[i].tbv ≈ g2[i].tbv
    end
@@ -246,6 +308,19 @@ end
    for i=1:nanim
       animal = mating(g.map, g.individual[1], g.individual[2])
       sumtbv = sumtbv + animal.tbv
+   end
+   pa = (g.individual[1].tbv + g.individual[2].tbv)/2
+   @test isapprox(sumtbv/nanim,pa, atol=1e-1)
+end
+
+@testset "general mating: MT" begin
+   ntr = 2
+   g = read_qmsim_data(snpmap1,qtlmap1,qtleff1,snpdata2,qtldata1, ntr=ntr)
+   sumtbv = zeros(ntr)
+   nanim = 1000
+   for i=1:nanim
+      animal = mating(g.map, g.individual[1], g.individual[2])
+      @. sumtbv = sumtbv + animal.tbv
    end
    pa = (g.individual[1].tbv + g.individual[2].tbv)/2
    @test isapprox(sumtbv/nanim,pa, atol=1e-1)
