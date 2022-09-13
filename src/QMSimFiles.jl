@@ -13,7 +13,8 @@ struct QMSimChromosomeMap
    pos::Vector{Float64}
    maxAllele::Int
    naQTL::Vector{Int}
-   effQTL::Matrix{Float64}
+   # effQTL[allele,seq] or effQTL[allele,seq,tr]
+   effQTL::Union{Matrix{Float64},Array{Float64,3}} 
 end
 
 # a set of chromosome maps
@@ -32,7 +33,7 @@ end
 
 # genotypes of an individual
 struct QMSimIndividualGenome
-   tbv::Float64
+   tbv::Union{Float64,Vector{Float64}}
    chr::Vector{QMSimChromosomeGenome}
 end
 
