@@ -163,6 +163,21 @@ function parse_QTL_effect!(allele,pos,effQTL::Array{Float64,3},str; tr=1)
 end
 
 """
+    af = read_freq(freqfile,map)
+
+Read a set of allele frequencies from files given a map structure.
+"""
+function read_freq(freqfile,gmap)
+   if !isfile(freqfile); throw(ArgumentError("file $(snpfile) not found")); end
+
+   af = Vector{QMSimChromosomeAlleleFrequency}(undef,gmap.nchr)
+   for i in 1:gmap.nchr
+      na = maxAllele[i]
+      af[i] = QMSimChromosomeAlleleFrequency(zeros(Float64,na,gmap.nLoci[i]))
+   end
+end
+
+"""
     g = read_genotypes(snpfile,qtlfile,map)
 
 Read a set of genotypes from files given a map structure.
