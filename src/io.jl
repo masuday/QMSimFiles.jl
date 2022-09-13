@@ -141,11 +141,19 @@ function load_QTL_effect!(qtleffectfile,maps)
          for i=1:na
             fst = 13 + (i-1)*14 + 5 + 1
             lst = fst + 8
-            maps[c].effQTL[i,nQTL[c]] = parse(Float64,strip(line[fst:lst]))
+            #maps[c].effQTL[i,nQTL[c]] = parse(Float64,strip(line[fst:lst]))
+            parse_QTL_effect!(i,nQTL[c],maps[c].effQTL,strip(line[fst:lst]))
          end
          maps[c].naQTL[nQTL[c]] = na
       end
    end
+end
+
+function parse_QTL_effect!(allele,pos,effQTL::Matrix{Float64},str)
+   effQTL[allele,pos] = parse(Float64,str)
+end
+function parse_QTL_effect!(allele,pos,effQTL::Array{Float64,3},str; tr=1)
+   effQTL[allele,pos,tr] = parse(Float64,str)
 end
 
 """
