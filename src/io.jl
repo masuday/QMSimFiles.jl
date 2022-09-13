@@ -381,6 +381,18 @@ function convert_qtldata_to_haplotype!(qtl,gmap,chromosome_set)
 end
 
 function get_true_breeding_value(gmap::QMSimMap,chromosome_set::Vector{QMSimChromosomeGenome})
+   if is_mtmap(gmap)
+      return _get_true_breeding_value_mt(gmap,chromosome_set)
+   else
+      return _get_true_breeding_value(gmap,chromosome_set)
+   end
+end
+
+function get_true_breeding_value(gmap::QMSimMap,individual_genome::QMSimIndividualGenome)
+   return get_true_breeding_value(gmap,individual_genome.chr)
+end
+
+function _get_true_breeding_value(gmap::QMSimMap,chromosome_set::Vector{QMSimChromosomeGenome})
    tbv = 0.0
    for i in 1:gmap.nchr
       qlocus = 0
@@ -397,9 +409,26 @@ function get_true_breeding_value(gmap::QMSimMap,chromosome_set::Vector{QMSimChro
    return tbv
 end
 
-function get_true_breeding_value(gmap::QMSimMap,individual_genome::QMSimIndividualGenome)
-   return get_true_breeding_value(gmap,individual_genome.chr)
+function _get_true_breeding_value_mt(gmap::QMSimMap,chromosome_set::Vector{QMSimChromosomeGenome})
+   ntr = ndims(gmap.chr[end].effQTL)
+   tbv = zeros(ntr)
+   for t in 1:ntr
+      for i in 1:gmap.nchr
+         qlocus = 0
+         nLoci = gmap.chr[i].nLoci
+         for j in 1:nLoci
+            # QTL
+            if gmap.chr[i].seqQTL[j]>0
+               qlocus = qlocus + 1
+               tbv[t] = tbv + gmap.chr[i].effQTL[chromosome_set[i].gp[j],qlocus,t]
+               tbv[t] = tbv + gmap.chr[i].effQTL[chromosome_set[i].gm[j],qlocus,t]
+            end
+         end
+      end
+   end
+   return tbv
 end
+
 
 """
     g = read_qmsim_data(snpmapfile,qtlmapfile,qtleffectfile,snpfile,qtlfile)

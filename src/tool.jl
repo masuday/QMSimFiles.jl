@@ -76,8 +76,8 @@ function ==(a::QMSimPopulationGenome,b::QMSimPopulationGenome)
    return true   
 end
 
-function is_mt(gmap)
-   ntr = ndims(gmap.chr[1].effQTL)
+function is_mtmap(gmap::QMSimMap)
+   ntr = ndims(gmap.chr[end].effQTL)
    if ntr>2
       return true
    else
