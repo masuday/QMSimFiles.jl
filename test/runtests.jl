@@ -444,6 +444,22 @@ end
    @test added == g.individual[1]
 end
 
+@testset "save/read maps: MT" begin
+   gmap = read_maps(snpmap1,qtlmap1,qtleff1)
+   hdf5file = tempname()
+   @info "temporary HDF5 file: $(hdf5file)"
+   create_qmsim_map_hdf5(gmap,hdf5file)
+   saved_map = read_qmsim_map_hdf5(hdf5file)
+   @test saved_map == gmap
+
+   gmap2 = read_maps(snpmap1,qtlmap1,qtleff1, ntr=3)
+   hdf5file = tempname()
+   @info "temporary HDF5 file: $(hdf5file)"
+   create_qmsim_map_hdf5(gmap2,hdf5file)
+   saved_map2 = read_qmsim_map_hdf5(hdf5file)
+   @test saved_map2 == gmap2
+end
+
 @testset "export to blupf90" begin
    g = read_qmsim_data(snpmap1,qtlmap1,qtleff1,snpdata2,qtldata1)
    @test String( QMSimFiles.pack_markrs(g.map,g.individual[2]) .+ UInt8(48)) == "12000001010"
