@@ -163,18 +163,97 @@ function parse_QTL_effect!(allele,pos,effQTL::Array{Float64,3},str; tr=1)
 end
 
 """
-    af = read_freq(freqfile,map)
+    af = read_freq(snpfreqfile,qtlfreqfile,map)
 
 Read a set of allele frequencies from files given a map structure.
 """
-function read_freq(freqfile,gmap)
-   if !isfile(freqfile); throw(ArgumentError("file $(snpfile) not found")); end
+function read_freq(snpfreqfile,qtlfreqfile,gmap)
+   if !isfile(snpfreqfile); throw(ArgumentError("file $(snpfreqfile) not found")); end
+   if !isfile(qtlfreqfile); throw(ArgumentError("file $(qtlfreqfile) not found")); end
+
+   snpfreq = read_raw_snp_freq(snpfreqfile,gmap)
+   qtlfreq = read_raw_qtl_freq(qtlfreqfile,gmap)
 
    af = Vector{QMSimChromosomeAlleleFrequency}(undef,gmap.nchr)
    for i in 1:gmap.nchr
-      na = maxAllele[i]
-      af[i] = QMSimChromosomeAlleleFrequency(zeros(Float64,na,gmap.nLoci[i]))
+      na = max(gmap.chr[i].maxAllele,2)
+      af[i] = QMSimChromosomeAlleleFrequency(zeros(Float64,na,gmap.chr[i].nLoci))
    end
+
+   snpIdx = Vector{Vector{Int64}}()
+   qtlIdx = Vector{Vector{Int64}}()
+   for i in 1:gmap.nchr
+      push!(snpIdx, findall(gmap.chr[i].seqQTL .== 0))
+      push!(qtlIdx, findall(gmap.chr[i].seqQTL .>  0))
+   end
+
+   # loading
+   ns = 0
+   nq = 0
+   for i in 1:gmap.nchr
+      # snp
+      for k in 1:gmap.chr[i].nSNP
+         ns = ns + 1
+         af[i].freq[1,snpIdx[i][k]] = snpfreq[ns]
+         af[i].freq[2,snpIdx[i][k]] = 1.0 - snpfreq[ns]
+      end
+      # qtl
+      for k in 1:gmap.chr[i].nQTL
+         nq = nq + 1
+         for l in 1:length(qtlfreq[nq])
+            af[i].freq[l,qtlIdx[i][k]] = qtlfreq[nq][l]
+         end
+      end
+   end
+   return QMSimAlleleFrequency(gmap,af)
+end
+
+function read_raw_snp_freq(snpfreqfile,gmap)
+   if !isfile(snpfreqfile); throw(ArgumentError("file $(snpfreqfile) not found")); end
+   n = 0
+   snpfreq = zeros(Float64,gmap.totalSNP)
+   open(snpfreqfile,"r") do io
+      line = readline(io)
+      while !eof(io)
+         # <--10--><--2--><--4--><--5--><--1--><--8.6-->
+         line = readline(io)
+         n = n + 1
+         allele = parse(Int,strip(line[10+2+4+1:10+2+4+5]))
+         fst = 10+2+4+5+1 + 1
+         lst = fst + 7
+         snpfreq[n] = parse(Float64,strip(line[fst:lst]))
+         if allele==2
+            snpfreq[n] = 0.0
+         end
+      end
+   end
+   return snpfreq
+end
+
+function read_raw_qtl_freq(qtlfreqfile,gmap)
+   if !isfile(qtlfreqfile); throw(ArgumentError("file $(qtlfreqfile) not found")); end
+   n = 0
+   qtlfreq = Vector{Vector{Float64}}()
+   open(qtlfreqfile,"r") do io
+      line = readline(io)
+      while !eof(io)
+         # <--10--><--2--><--4--><--11--><--1-->(<--4--><--1--><--8.6-->)
+         # |--------------28-------------------|(|---------13----------|)
+         line = readline(io)
+         n = n + 1
+         ni = Int(round((length(line)-28)/13))
+         na = tryparse(Int,line[28+(ni-1)*13+1:28+(ni-1)*13+4])
+         freq = zeros(na)
+         for i in 1:ni
+            allele = tryparse(Int,line[(28+(i-1)*13+1):(28+(i-1)*13+4)])
+            fst = 28+(i-1)*13 + 6
+            lst = 28+(i-1)*13 + 13
+            freq[allele] = parse(Float64,strip(line[fst:lst]))
+         end
+         push!(qtlfreq,freq)
+      end
+   end
+   return qtlfreq
 end
 
 """

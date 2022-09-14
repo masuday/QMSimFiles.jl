@@ -57,7 +57,7 @@ end
 
 import Base: ==
 export QMSimChromosomeMap, QMSimMap, QMSimChromosomeGenome, QMSimIndividualGenome, QMSimPopulationGenome
-export read_maps, read_genotypes, get_true_breeding_value, read_qmsim_data, 
+export read_maps, read_genotypes, get_true_breeding_value, read_qmsim_data, read_freq,
        save_qmsim_data_hdf5, read_qmsim_map_hdf5, read_qmsim_data_hdf5, get_qmsim_genotype_size,
        read_qmsim_individual_hdf5, add_qmsim_individual_hdf5, create_qmsim_map_hdf5,
        export_qmsim_individual_blupf90

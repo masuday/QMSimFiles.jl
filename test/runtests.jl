@@ -4,6 +4,8 @@ using Test
 snpmap1 = "lm_mrk_001.txt"
 qtlmap1 = "lm_qtl_001.txt"
 qtleff1 = "effect_qtl_001.txt"
+snpfreq1 = "p1_freq_mrk_001.txt"
+qtlfreq1 = "p1_freq_qtl_001.txt"
 snpdata1 = "p1_mrk_001.txt"
 snpdata2 = "p1_mrk_002.txt"   # saved as /snp_code
 qtldata1 = "p1_qtl_001.txt"
@@ -140,6 +142,49 @@ end
       @test all( refmap.chr[i].naQTL .== maps[i].naQTL )
       @test all( refmap.chr[i].effQTL[:,:] .≈ maps[i].effQTL[:,:,1] )
    end
+end
+
+@testset "allele frequency" begin
+   gmap = read_maps(snpmap1,qtlmap1,qtleff1)
+
+   # low level functions
+   snpfreq = QMSimFiles.read_raw_snp_freq(snpfreq1,gmap)
+   @test snpfreq[1:11] ≈ [0.25,0.25,0.75,0.625,1.0,1.0,1.0,0.5,0.875,0.5,0.875]
+   qtlfreq = QMSimFiles.read_raw_qtl_freq(qtlfreq1,gmap)
+   @test all( qtlfreq[1] .≈ [0.0, 0.375, 0.625] )
+   @test all( qtlfreq[2] .≈ [0.0, 0.25, 0.125, 0.625] )
+   @test all( qtlfreq[3] .≈ [0.125, 0.0, 0.125, 0.75] )
+   @test all( qtlfreq[4] .≈ [0.75, 0.25] )
+   @test all( qtlfreq[5] .≈ [0.375, 0.25, 0.375] )
+   @test all( qtlfreq[6] .≈ [0.0, 1.0] )
+   @test all( qtlfreq[7] .≈ [0.375, 0.625] )
+   @test all( qtlfreq[8] .≈ [0.25, 0.75] )
+   @test all( qtlfreq[9] .≈ [0.125, 0.875] )
+
+   # batch function
+   freq = read_freq(snpfreq1,qtlfreq1,gmap)
+   # chromosome 1
+   f = freq.chr[1].freq
+   @test size(f) == (4,7)
+   @test all( f[1:4,1] .== [0.25,  0.75,  0.0,   0.0] )
+   @test all( f[1:4,2] .== [0.00,  0.375, 0.625, 0.0] )
+   @test all( f[1:4,3] .== [0.00,  0.25,  0.125, 0.625] )
+   @test all( f[1:4,4] .== [0.25,  0.75,  0.0,   0.0] )
+   @test all( f[1:4,5] .== [0.75,  0.25,  0.0,   0.0] )
+   @test all( f[1:4,6] .== [0.625, 0.375, 0.0,   0.0] )
+   @test all( f[1:4,7] .== [0.125, 0.00,  0.125, 0.75] )
+   # chromosome 2
+   f = freq.chr[2].freq
+   @test size(f) == (4,7)
+   # chromosome 3
+   f = freq.chr[3].freq
+   @test size(f) == (3,6)
+   @test all( f[1:3,1] .== [0.25,  0.75,  0.0] )
+   @test all( f[1:3,2] .== [0.125, 0.875, 0.0] )
+   @test all( f[1:3,3] .== [0.50,  0.50,  0.0] )
+   @test all( f[1:3,4] .== [0.875, 0.125, 0.0] )
+   @test all( f[1:3,5] .== [0.5,   0.5,   0.0] )
+   @test all( f[1:3,6] .== [0.875, 0.125, 0.0] )
 end
 
 @testset "generate_chromosome_set" begin
