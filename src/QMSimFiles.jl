@@ -1,6 +1,8 @@
 module QMSimFiles
 
 using Printf
+using Random
+using Statistics
 using Distributions
 using HDF5
 
@@ -61,7 +63,7 @@ export read_maps, read_genotypes, get_true_breeding_value, read_qmsim_data, read
        save_qmsim_data_hdf5, read_qmsim_map_hdf5, read_qmsim_data_hdf5, get_qmsim_genotype_size,
        read_qmsim_individual_hdf5, add_qmsim_individual_hdf5, create_qmsim_map_hdf5,
        export_qmsim_individual_blupf90,
-       is_mtmap
+       is_mtmap, generate_effQTL!
 export mating
 
 include("io.jl")

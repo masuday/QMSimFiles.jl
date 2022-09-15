@@ -1,5 +1,7 @@
 using QMSimFiles
 using Test
+using Random
+using Distributions
 
 snpmap1 = "lm_mrk_001.txt"
 qtlmap1 = "lm_qtl_001.txt"
@@ -482,4 +484,101 @@ end
       items = split(line)
       @test items[1]=="3" && items[2]=="22220001120"
    end
+end
+
+@testset "random QTL effects" begin
+   Random.seed!(12345)
+   ntr = 2
+   nQTL = 1000
+   nAllele = 3
+   expvar = 1.0
+   freq = zeros(nAllele, nQTL)
+   naQTL = zeros(Int,nQTL)
+   for i in 1:nQTL
+      na = mod(abs(rand(Int)),nAllele) + 1
+      naQTL[i] = na
+      freq[1:na,i] .= rand(na)
+      freq[1:na,i] .= freq[1:na,i]/sum(freq[1:na,i])
+   end
+
+   # single trait: gamma distribution
+   effQTL = zeros(nAllele, nQTL)
+   QMSimFiles.rand_effQTL!(effQTL, Gamma(1.0))
+   obsvar = QMSimFiles.var_effQTL(effQTL,naQTL,freq)
+   scale = sqrt(expvar/obsvar)
+   QMSimFiles.adjust_effQTL!(effQTL, naQTL, freq, scale)
+   finalvar = QMSimFiles.var_effQTL(effQTL,naQTL,freq)
+   @test finalvar ≈ expvar
+
+   # single trait: function for gamma distribution
+   function gengamma(α=1.0,β=1.0)
+      return rand(Gamma(α,β))
+   end
+   effQTL = zeros(nAllele, nQTL)
+   QMSimFiles.rand_effQTL!(effQTL, gengamma)
+   obsvar = QMSimFiles.var_effQTL(effQTL,naQTL,freq)
+   scale = sqrt(expvar/obsvar)
+   QMSimFiles.adjust_effQTL!(effQTL, naQTL, freq, scale)
+   finalvar = QMSimFiles.var_effQTL(effQTL,naQTL,freq)
+   @test finalvar ≈ expvar
+
+   # multiple trait
+   effQTL = zeros(nAllele, nQTL, ntr)
+   QMSimFiles.rand_effQTL!(effQTL, Gamma(1.0))
+   obsvar = QMSimFiles.var_effQTL(effQTL,naQTL,freq)
+   scale = sqrt.(expvar ./ obsvar)
+   QMSimFiles.adjust_effQTL!(effQTL, naQTL, freq, scale)
+   finalvar = QMSimFiles.var_effQTL(effQTL,naQTL,freq)
+   @test finalvar ≈ repeat([expvar],ntr)
+
+   # multiple trait
+   function genmtgamma(ntr=1, α=1.0,β=1.0)
+      g = zeros(ntr)
+      for i in 1:ntr
+         x = rand(Gamma(α,β))
+         g[i:ntr] .= g[i:ntr] .+ x
+      end
+      return g
+   end
+   effQTL = zeros(nAllele, nQTL, ntr)
+   QMSimFiles.rand_effQTL!(effQTL, genmtgamma, ntr, 1.0)
+   obsvar = QMSimFiles.var_effQTL(effQTL,naQTL,freq)
+   scale = sqrt.(expvar ./ obsvar)
+   QMSimFiles.adjust_effQTL!(effQTL, naQTL, freq, scale)
+   finalvar = QMSimFiles.var_effQTL(effQTL,naQTL,freq)
+   @test finalvar ≈ repeat([expvar],ntr)
+
+   # general function
+   effQTL = zeros(nAllele, nQTL)
+   generate_effQTL!(effQTL, naQTL, freq, Gamma(1.0), expvar=expvar)
+   finalvar = QMSimFiles.var_effQTL(effQTL,naQTL,freq)
+   @test finalvar ≈ expvar
+
+   effQTL = zeros(nAllele, nQTL)
+   generate_effQTL!(effQTL, naQTL, freq, gengamma, 1.0, expvar=expvar)
+   finalvar = QMSimFiles.var_effQTL(effQTL,naQTL,freq)
+   @test finalvar ≈ expvar
+
+   effQTL = zeros(nAllele, nQTL, ntr)
+   generate_effQTL!(effQTL, naQTL, freq, Gamma(1.0), expvar=expvar)
+   finalvar = QMSimFiles.var_effQTL(effQTL,naQTL,freq)
+   @test finalvar ≈ repeat([expvar],ntr)
+
+   effQTL = zeros(nAllele, nQTL, ntr)
+   generate_effQTL!(effQTL, naQTL, freq, genmtgamma, ntr, 1.0, expvar=expvar)
+   finalvar = QMSimFiles.var_effQTL(effQTL,naQTL,freq)
+   @test finalvar ≈ repeat([expvar],ntr)
+
+   # general map file
+   gmap = read_maps(snpmap1,qtlmap1,qtleff1)
+   af = read_freq(snpfreq1,qtlfreq1,gmap)
+   generate_effQTL!(gmap, af, gengamma, 1.0, expvar=expvar)
+   finalvar = QMSimFiles.var_effQTL(gmap, af)
+   @test finalvar ≈ expvar
+
+   gmap = read_maps(snpmap1,qtlmap1,qtleff1, ntr=ntr)
+   af = read_freq(snpfreq1,qtlfreq1,gmap)
+   generate_effQTL!(gmap, af, genmtgamma, ntr, 1.0, expvar=expvar)
+   finalvar = QMSimFiles.var_effQTL(gmap, af)
+   @test finalvar ≈ repeat([expvar],ntr)
 end
