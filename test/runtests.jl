@@ -6,11 +6,13 @@ using Distributions
 snpmap1 = "lm_mrk_001.txt"
 qtlmap1 = "lm_qtl_001.txt"
 qtleff1 = "effect_qtl_001.txt"
+qtleffx = "effect_qtl_err.txt"
 snpfreq1 = "p1_freq_mrk_001.txt"
 qtlfreq1 = "p1_freq_qtl_001.txt"
 snpdata1 = "p1_mrk_001.txt"
 snpdata2 = "p1_mrk_002.txt"   # saved as /snp_code
 qtldata1 = "p1_qtl_001.txt"
+qtldata2 = "p1_qtl_002.txt"   # QMSim v2 format (8 columns for ID)
 
 @testset "get_number_of_chromosomes" begin
    nchr = QMSimFiles.get_number_of_chromosomes(snpmap1)
@@ -32,6 +34,14 @@ end
    maxna,maxAllele = QMSimFiles.get_number_of_QTL_allele(qtleff1,3)
    @test maxna == 4
    @test all( maxAllele .== [4,4,3] )
+   @test_throws ArgumentError maxna,maxAllele = QMSimFiles.get_number_of_QTL_allele(qtleffx,3)
+end
+
+@testset "get_leading_width_standard" begin
+   @test QMSimFiles.get_leading_width_standard(snpdata1) == 7
+   @test QMSimFiles.get_leading_width_standard(snpdata2) == 7
+   @test QMSimFiles.get_leading_width_standard(qtldata1) == 7
+   @test QMSimFiles.get_leading_width_standard(qtldata2) == 8
 end
 
 @testset "load_SNP_QTL_maps!" begin
@@ -247,6 +257,73 @@ end
    # general function
    g1 = read_genotypes(snpdata1,qtldata1,gmap)
    g2 = read_genotypes(snpdata2,qtldata1,gmap)
+   for i=1:3
+      @test all( g1[2].chr[i].gp .== chromosome_set2[i].gp )
+      @test all( g1[2].chr[i].gm .== chromosome_set2[i].gm )
+      @test all( g2[2].chr[i].gp .== chromosome_set2[i].gp )
+      @test all( g2[2].chr[i].gm .== chromosome_set2[i].gm )
+   end
+   @test isapprox(g1[1].tbv, -0.412531, atol=1e-5)
+   @test isapprox(g1[2].tbv, -0.015914, atol=1e-5)
+   @test isapprox(g1[3].tbv, -0.137409, atol=1e-5)
+   @test isapprox(g1[4].tbv, -0.242572, atol=1e-5)
+   for i=1:4
+      @test g1[i].tbv ≈ g2[i].tbv
+   end
+end
+
+@testset "parse SNP/QTL data v2" begin
+   gmap = read_maps(snpmap1,qtlmap1,qtleff1)
+   @test QMSimFiles.is_snpcode_file(snpdata1,gmap.totalSNP)==false
+   @test QMSimFiles.is_snpcode_file(snpdata2,gmap.totalSNP)==true
+
+   # for SNP (standard)
+   stext = "2       2 1 2 2 1 1 1 1 1 1 1 1 1 1 1 2 1 1 1 2 1 1"
+   snp = zeros(Int8,gmap.totalSNP*2)
+   QMSimFiles.text_to_code!(stext,gmap.totalSNP,snp,7)
+   @test all( snp .== [2, 1, 2, 2, 1, 1, 1, 1,   1, 1, 1, 1, 1, 1,   1, 2, 1, 1, 1, 2, 1, 1] )
+
+   chromosome_set1 = QMSimFiles.generate_chromosome_set(gmap)
+   QMSimFiles.convert_snpdata_to_haplotype!(snp,gmap,chromosome_set1)
+   @test all( chromosome_set1[1].gp[findall(x->gmap.chr[1].seqQTL[x]==0,1:gmap.chr[1].nLoci)] .== [1,1,0,0] )
+   @test all( chromosome_set1[1].gm[findall(x->gmap.chr[1].seqQTL[x]==0,1:gmap.chr[1].nLoci)] .== [0,1,0,0] )
+   @test all( chromosome_set1[2].gp[findall(x->gmap.chr[2].seqQTL[x]==0,1:gmap.chr[2].nLoci)] .== [0,0,0] )
+   @test all( chromosome_set1[2].gm[findall(x->gmap.chr[2].seqQTL[x]==0,1:gmap.chr[2].nLoci)] .== [0,0,0] )
+   @test all( chromosome_set1[3].gp[findall(x->gmap.chr[3].seqQTL[x]==0,1:gmap.chr[3].nLoci)] .== [0,0,0,0] )
+   @test all( chromosome_set1[3].gm[findall(x->gmap.chr[3].seqQTL[x]==0,1:gmap.chr[3].nLoci)] .== [1,0,1,0] )
+ 
+   # for SNP (snp_code)
+   ctext = "2      42000003030"
+   snp_code = zeros(Int8,gmap.totalSNP)
+   QMSimFiles.text_to_snpcode!(ctext,gmap.totalSNP,snp_code,7)
+   @test all( snp_code .== [4,2,0,0, 0,0,0, 3,0,3,0] )
+
+   chromosome_set2 = QMSimFiles.generate_chromosome_set(gmap)
+   QMSimFiles.convert_snpcode_to_haplotype!(snp_code,gmap,chromosome_set2)
+   @test all( chromosome_set2[1].gp .== chromosome_set1[1].gp )
+   @test all( chromosome_set2[1].gm .== chromosome_set1[1].gm )
+   @test all( chromosome_set2[2].gp .== chromosome_set1[2].gp )
+   @test all( chromosome_set2[2].gm .== chromosome_set1[2].gm )
+   @test all( chromosome_set2[3].gp .== chromosome_set1[3].gp )
+   @test all( chromosome_set2[3].gm .== chromosome_set1[3].gm )
+   
+   # for QTL v2
+   qtext = "2        2 2 2 4 4 1 1 1 2 1 2 2 2 2 2 1 1 2"
+   qtl = zeros(Int8,gmap.totalQTL*2)
+   QMSimFiles.text_to_code!(qtext,gmap.totalQTL,qtl,8)
+   @test all( qtl .== [2, 2, 2, 4, 4, 1,   1, 1, 2, 1, 2, 2, 2, 2,   2, 1, 1, 2] )
+
+   QMSimFiles.convert_qtldata_to_haplotype!(qtl,gmap,chromosome_set2)
+   @test all( chromosome_set2[1].gp[findall(x->gmap.chr[1].seqQTL[x]>0,1:gmap.chr[1].nLoci)] .== [2,2,4] )
+   @test all( chromosome_set2[1].gm[findall(x->gmap.chr[1].seqQTL[x]>0,1:gmap.chr[1].nLoci)] .== [2,4,1] )
+   @test all( chromosome_set2[2].gp[findall(x->gmap.chr[2].seqQTL[x]>0,1:gmap.chr[2].nLoci)] .== [1,2,2,2] )
+   @test all( chromosome_set2[2].gm[findall(x->gmap.chr[2].seqQTL[x]>0,1:gmap.chr[2].nLoci)] .== [1,1,2,2] )
+   @test all( chromosome_set2[3].gp[findall(x->gmap.chr[3].seqQTL[x]>0,1:gmap.chr[3].nLoci)] .== [2,1] )
+   @test all( chromosome_set2[3].gm[findall(x->gmap.chr[3].seqQTL[x]>0,1:gmap.chr[3].nLoci)] .== [1,2] )
+
+   # general function
+   g1 = read_genotypes(snpdata1,qtldata2,gmap)
+   g2 = read_genotypes(snpdata2,qtldata2,gmap)
    for i=1:3
       @test all( g1[2].chr[i].gp .== chromosome_set2[i].gp )
       @test all( g1[2].chr[i].gm .== chromosome_set2[i].gm )
