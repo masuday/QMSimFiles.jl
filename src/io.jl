@@ -129,6 +129,10 @@ function get_number_of_QTL_allele(qtleffectfile,maxChr)
          maxAllele[c] = max(maxAllele[c],na)
       end
    end
+   # current restriction
+   if maxna>9
+      throw(ArgumentError("no support: 10 or more allele at QTL"))
+   end
    return maxna,maxAllele
 end
 
