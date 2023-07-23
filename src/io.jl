@@ -7,7 +7,7 @@ Read three map and effect files, and create a single map object, `QMSimMap`.
 With `ntr>0`, it returns the map object with QTL effects of `ntr` traits.
 In this case, the QTL effects will be loaded for trait 1; zero QTL effects will be assigned to the other traits.
 """
-function read_maps(snpmapfile,qtlmapfile,qtleffectfile; ntr=0)
+function read_maps(snpmapfile,qtlmapfile,qtleffectfile; ntr=1)
    # number of chromosomes
    maxChrM = get_number_of_chromosomes(snpmapfile)
    maxChrQ = get_number_of_chromosomes(qtlmapfile)
@@ -26,7 +26,7 @@ function read_maps(snpmapfile,qtlmapfile,qtleffectfile; ntr=0)
    maps = Vector{QMSimChromosomeMap}(undef,maxChr)
    @inbounds for i in 1:maxChr
       na = maxAllele[i]
-      if ntr>0
+      if ntr>1
          maps[i] = QMSimChromosomeMap(ntr,nLoci[i],nSNP[i],nQTL[i],zeros(Int,nLoci[i]),zeros(Float64,nLoci[i]),na,zeros(Int,nQTL[i]),zeros(Float64,na,nQTL[i],ntr))
       else
          maps[i] = QMSimChromosomeMap(1,nLoci[i],nSNP[i],nQTL[i],zeros(Int,nLoci[i]),zeros(Float64,nLoci[i]),na,zeros(Int,nQTL[i]),zeros(Float64,na,nQTL[i]))
