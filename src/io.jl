@@ -27,9 +27,9 @@ function read_maps(snpmapfile,qtlmapfile,qtleffectfile; ntr=0)
    @inbounds for i in 1:maxChr
       na = maxAllele[i]
       if ntr>0
-         maps[i] = QMSimChromosomeMap(nLoci[i],nSNP[i],nQTL[i],zeros(Int,nLoci[i]),zeros(Float64,nLoci[i]),na,zeros(Int,nQTL[i]),zeros(Float64,na,nQTL[i],ntr))
+         maps[i] = QMSimChromosomeMap(ntr,nLoci[i],nSNP[i],nQTL[i],zeros(Int,nLoci[i]),zeros(Float64,nLoci[i]),na,zeros(Int,nQTL[i]),zeros(Float64,na,nQTL[i],ntr))
       else
-         maps[i] = QMSimChromosomeMap(nLoci[i],nSNP[i],nQTL[i],zeros(Int,nLoci[i]),zeros(Float64,nLoci[i]),na,zeros(Int,nQTL[i]),zeros(Float64,na,nQTL[i]))
+         maps[i] = QMSimChromosomeMap(1,nLoci[i],nSNP[i],nQTL[i],zeros(Int,nLoci[i]),zeros(Float64,nLoci[i]),na,zeros(Int,nQTL[i]),zeros(Float64,na,nQTL[i]))
       end
    end
 

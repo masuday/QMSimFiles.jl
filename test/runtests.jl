@@ -47,9 +47,9 @@ end
 @testset "load_SNP_QTL_maps!" begin
    maxna,maxAllele = QMSimFiles.get_number_of_QTL_allele(qtleff1,3)
    maps = Vector{QMSimFiles.QMSimChromosomeMap}(undef,3)
-   maps[1] = QMSimFiles.QMSimChromosomeMap(7,4,3,zeros(Int,7),zeros(Float64,7),maxAllele[1],zeros(Int,maxAllele[1]),zeros(Float64,maxAllele[1],3))
-   maps[2] = QMSimFiles.QMSimChromosomeMap(7,3,4,zeros(Int,7),zeros(Float64,7),maxAllele[2],zeros(Int,maxAllele[2]),zeros(Float64,maxAllele[2],4))
-   maps[3] = QMSimFiles.QMSimChromosomeMap(6,4,2,zeros(Int,6),zeros(Float64,6),maxAllele[3],zeros(Int,maxAllele[3]),zeros(Float64,maxAllele[3],2))
+   maps[1] = QMSimFiles.QMSimChromosomeMap(1,7,4,3,zeros(Int,7),zeros(Float64,7),maxAllele[1],zeros(Int,maxAllele[1]),zeros(Float64,maxAllele[1],3))
+   maps[2] = QMSimFiles.QMSimChromosomeMap(1,7,3,4,zeros(Int,7),zeros(Float64,7),maxAllele[2],zeros(Int,maxAllele[2]),zeros(Float64,maxAllele[2],4))
+   maps[3] = QMSimFiles.QMSimChromosomeMap(1,6,4,2,zeros(Int,6),zeros(Float64,6),maxAllele[3],zeros(Int,maxAllele[3]),zeros(Float64,maxAllele[3],2))
    QMSimFiles.load_SNP_QTL_maps!(snpmap1,qtlmap1,maps)
    @test all( maps[1].seqQTL .== [0,0,0,0,1,2,3] )
    @test all( maps[2].seqQTL .== [0,0,0,4,5,6,7] )
@@ -76,9 +76,9 @@ end
 @testset "load_QTL_effect! and read_maps" begin
    maxna,maxAllele = QMSimFiles.get_number_of_QTL_allele(qtleff1,3)
    maps = Vector{QMSimFiles.QMSimChromosomeMap}(undef,3)
-   maps[1] = QMSimFiles.QMSimChromosomeMap(7,4,3,zeros(Int,7),zeros(Float64,7),maxAllele[1],zeros(Int,3),zeros(Float64,maxAllele[1],3))
-   maps[2] = QMSimFiles.QMSimChromosomeMap(7,3,4,zeros(Int,7),zeros(Float64,7),maxAllele[2],zeros(Int,4),zeros(Float64,maxAllele[2],4))
-   maps[3] = QMSimFiles.QMSimChromosomeMap(6,4,2,zeros(Int,6),zeros(Float64,6),maxAllele[3],zeros(Int,2),zeros(Float64,maxAllele[3],2))
+   maps[1] = QMSimFiles.QMSimChromosomeMap(1,7,4,3,zeros(Int,7),zeros(Float64,7),maxAllele[1],zeros(Int,3),zeros(Float64,maxAllele[1],3))
+   maps[2] = QMSimFiles.QMSimChromosomeMap(1,7,3,4,zeros(Int,7),zeros(Float64,7),maxAllele[2],zeros(Int,4),zeros(Float64,maxAllele[2],4))
+   maps[3] = QMSimFiles.QMSimChromosomeMap(1,6,4,2,zeros(Int,6),zeros(Float64,6),maxAllele[3],zeros(Int,2),zeros(Float64,maxAllele[3],2))
    QMSimFiles.load_SNP_QTL_maps!(snpmap1,qtlmap1,maps)
    QMSimFiles.sort_by_position!(maps[1].pos, maps[1].seqQTL)
    QMSimFiles.sort_by_position!(maps[2].pos, maps[2].seqQTL)
@@ -118,9 +118,9 @@ end
    ntr = 2
    maxna,maxAllele = QMSimFiles.get_number_of_QTL_allele(qtleff1,3)
    maps = Vector{QMSimFiles.QMSimChromosomeMap}(undef,3)
-   maps[1] = QMSimFiles.QMSimChromosomeMap(7,4,3,zeros(Int,7),zeros(Float64,7),maxAllele[1],zeros(Int,3),zeros(Float64,maxAllele[1],3,ntr))
-   maps[2] = QMSimFiles.QMSimChromosomeMap(7,3,4,zeros(Int,7),zeros(Float64,7),maxAllele[2],zeros(Int,4),zeros(Float64,maxAllele[2],4,ntr))
-   maps[3] = QMSimFiles.QMSimChromosomeMap(6,4,2,zeros(Int,6),zeros(Float64,6),maxAllele[3],zeros(Int,2),zeros(Float64,maxAllele[3],2,ntr))
+   maps[1] = QMSimFiles.QMSimChromosomeMap(ntr,7,4,3,zeros(Int,7),zeros(Float64,7),maxAllele[1],zeros(Int,3),zeros(Float64,maxAllele[1],3,ntr))
+   maps[2] = QMSimFiles.QMSimChromosomeMap(ntr,7,3,4,zeros(Int,7),zeros(Float64,7),maxAllele[2],zeros(Int,4),zeros(Float64,maxAllele[2],4,ntr))
+   maps[3] = QMSimFiles.QMSimChromosomeMap(ntr,6,4,2,zeros(Int,6),zeros(Float64,6),maxAllele[3],zeros(Int,2),zeros(Float64,maxAllele[3],2,ntr))
    QMSimFiles.load_SNP_QTL_maps!(snpmap1,qtlmap1,maps)
    QMSimFiles.sort_by_position!(maps[1].pos, maps[1].seqQTL)
    QMSimFiles.sort_by_position!(maps[2].pos, maps[2].seqQTL)
@@ -659,3 +659,8 @@ end
    finalvar = QMSimFiles.var_effQTL(gmap, af)
    @test finalvar ≈ repeat([expvar],ntr)
 end
+
+#@testset "replace QTL effects for MT" begin
+#   ntr = 2
+#   gmap = read_maps(snpmap1,qtlmap1,qtleff1)
+#end

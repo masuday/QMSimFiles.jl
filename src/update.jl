@@ -185,3 +185,4 @@ function collect_qtlfreq(chrmap::QMSimChromosomeMap, chraf::QMSimChromosomeAllel
    end
    return freq
 end
+

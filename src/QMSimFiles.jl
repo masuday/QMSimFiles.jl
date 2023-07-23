@@ -8,6 +8,7 @@ using HDF5
 
 # chrosomome map
 struct QMSimChromosomeMap
+   ntr::Int
    nLoci::Int
    nSNP::Int
    nQTL::Int

@@ -16,6 +16,7 @@ function save_qmsim_data_hdf5(pop,hdf5file)
       for i=1:map.nchr
          n = @sprintf("%d",i)
          create_group(fid, "map/chr/"*n)
+         write(fid, "map/chr/"*n*"/ntr", map.chr[i].ntr)
          write(fid, "map/chr/"*n*"/nLoci", map.chr[i].nLoci)
          write(fid, "map/chr/"*n*"/nSNP", map.chr[i].nSNP)
          write(fid, "map/chr/"*n*"/nQTL", map.chr[i].nQTL)
@@ -99,6 +100,13 @@ function read_qmsim_map_hdf5(hdf5file)
       for i=1:nchr
          n = @sprintf("%d",i)
          cgr = fid["map/chr/"*n]
+         ntr = 1
+         try
+            ntr = read(cgr,"ntr")
+         catch
+            @warn "Old HDF5 format without ntr; assuming ntr=1"
+            ntr = 1
+         end
          nLoci = read(cgr,"nLoci")
          nSNP = read(cgr,"nSNP")
          nQTL = read(cgr,"nQTL")
@@ -107,7 +115,7 @@ function read_qmsim_map_hdf5(hdf5file)
          maxAllele = read(cgr,"maxAllele")
          naQTL = read(cgr,"naQTL")
          effQTL = read(cgr,"effQTL")
-         chr[i] = QMSimChromosomeMap(nLoci,nSNP,nQTL,seqQTL,pos,maxAllele,naQTL,effQTL)
+         chr[i] = QMSimChromosomeMap(ntr,nLoci,nSNP,nQTL,seqQTL,pos,maxAllele,naQTL,effQTL)
       end
    end
    return QMSimMap(nchr,totalSNP,totalQTL,chr)
