@@ -535,11 +535,11 @@ end
 
 
 """
-    g = read_qmsim_data(snpmapfile,qtlmapfile,qtleffectfile,snpfile,qtlfile; ntr=0)
+    g = read_qmsim_data(snpmapfile,qtlmapfile,qtleffectfile,snpfile,qtlfile; ntr=1)
 
 Read map, QTL effect, and genotype files to give a unified structure, `g::QMSimPopulationGenome`.
 """
-function read_qmsim_data(snpmapfile,qtlmapfile,qtleffectfile,snpfile,qtlfile; ntr=0)
+function read_qmsim_data(snpmapfile,qtlmapfile,qtleffectfile,snpfile,qtlfile; ntr=1)
    gmap = read_maps(snpmapfile,qtlmapfile,qtleffectfile, ntr=ntr)
    genotypes = read_genotypes(snpfile,qtlfile,gmap)
    return QMSimPopulationGenome(gmap, genotypes)
