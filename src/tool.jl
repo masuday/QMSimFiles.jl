@@ -77,8 +77,13 @@ function ==(a::QMSimPopulationGenome,b::QMSimPopulationGenome)
 end
 
 function is_mtmap(gmap::QMSimMap)
-   ntr = ndims(gmap.chr[end].effQTL)
-   if ntr>2
+   return is_mtmap(gmap.chr[end])
+end
+
+function is_mtmap(chrmap::QMSimChromosomeMap)
+   ntr = chrmap.ntr
+   nd = ndims(chrmap.effQTL)
+   if nd>2 | ntr>1
       return true
    else
       return false
