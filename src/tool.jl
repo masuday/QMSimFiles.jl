@@ -115,3 +115,12 @@ function rmvpe(n,mu,V,kappa=1.0)
    end
    return(x)
 end
+
+function genmtgamma(ntr=1, α=1.0,β=1.0)
+   g = zeros(ntr)
+   for i in 1:ntr
+      x = rand(Gamma(α,β))
+      g[i:ntr] .= g[i:ntr] .+ x
+   end
+   return g
+end
