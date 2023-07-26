@@ -32,6 +32,10 @@ function generate_effQTL!(effQTL, naQTL, freq, dist_or_func, args...; expvar=1.0
    return nothing
 end
 
+function generate_effQTL!(g::QMSimPopulationGenome, af::QMSimAlleleFrequency, dist_or_func, args...; expvar=1.0)
+   generate_effQTL!(g.map, af, dist_or_func, args..., expvar=expvar)
+end
+
 """
     rand_effQTL!(gmap::QMSimMap, dist)
 
@@ -87,7 +91,15 @@ function rand_effQTL!(effQTL::Array{Float64,3}, func::Function, args...)
    end
    return nothing
 end
- 
+
+function rand_effQTL!(g::QMSimPopulationGenome, dist::T) where {T<:Distribution}
+   rand_effQTL!(g.map, dist)
+end
+
+function rand_effQTL!(g::QMSimPopulationGenome, func::Function, args...)
+   rand_effQTL!(g.map, func, args...)
+end
+
 """
     adjust_effQTL!(gmap::QMSimMap, af::QMSimAlleleFrequency, scale)
 """
@@ -123,6 +135,9 @@ function adjust_effQTL!(effQTL::Array{Float64,3}, naQTL, freq, scale::Vector{Flo
    return nothing
 end
 
+function adjust_effQTL!(g::QMSimPopulationGenome, af::QMSimAlleleFrequency, scale)
+   adjust_effQTL!(g.map, af, scale)
+end
 
 """
     var_effQTL(effQTL, naQTL, freq)
@@ -169,6 +184,10 @@ function var_effQTL(effQTL::Array{Float64,3}, naQTL, freq)
       v[i] = v[i] + var_effQTL(effQTL[:,:,i], naQTL, freq)
    end
    return v
+end
+
+function var_effQTL(g::QMSimPopulationGenome, af::QMSimAlleleFrequency)
+   var_effQTL(g.map, af)
 end
 
 """
