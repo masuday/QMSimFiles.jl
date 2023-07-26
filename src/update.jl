@@ -186,3 +186,22 @@ function collect_qtlfreq(chrmap::QMSimChromosomeMap, chraf::QMSimChromosomeAllel
    return freq
 end
 
+"""
+    update_true_breeding_value!(gmap,individual)
+"""
+function update_true_breeding_value!(gmap::QMSimMap,individual_genome::QMSimIndividualGenome)
+   individual_genome.tbv .= get_true_breeding_value(gmap,individual_genome)
+   return nothing
+end
+
+function update_true_breeding_value!(gmap::QMSimMap,individual_genome::Vector{QMSimIndividualGenome})
+   for ig in individual_genome
+      update_true_breeding_value!(gmap,ig)
+   end
+   return nothing
+end
+
+function update_true_breeding_value!(g::QMSimPopulationGenome)
+   update_true_breeding_value!(g.map, g.individual)
+   return nothing
+end
