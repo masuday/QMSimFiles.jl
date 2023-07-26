@@ -3,6 +3,7 @@ module QMSimFiles
 using Printf
 using Random
 using Statistics
+using LinearAlgebra
 using Distributions
 using HDF5
 

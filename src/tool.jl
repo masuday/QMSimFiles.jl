@@ -89,3 +89,29 @@ function is_mtmap(chrmap::QMSimChromosomeMap)
       return false
    end
 end
+
+
+#
+# Translated from rmvpe in "LaplacesDemon", an R package
+# LaplacesDemon Package:
+# YEAR: 2010-2015 
+# COPYRIGHT HOLDER: Statisticat, LLC
+# Licence: MIT (taken from "LaplacesDemon")
+#
+function rmvpe(n,mu,V,kappa=1.0)
+   k = length(mu)
+   (d,U) = eigen(V)
+   SigmaSqrt = U*diagm(sqrt.(d))*U'
+   radius = rand(Gamma(k/(2*kappa),1/2),n) .^ (1/(2*kappa))
+   Mnormal = rand(Normal(),n,k)
+   rownorms = sqrt.(sum(Mnormal.^2,dims=2))
+   unifsphere = Mnormal
+   for j=1:k
+      unifsphere[:,j] .= unifsphere[:,j] ./ rownorms
+   end
+   x = radius .* (unifsphere * SigmaSqrt)
+   for j=1:k
+      x[:,j] .= x[:,j] .+ mu[j]
+   end
+   return(x)
+end
