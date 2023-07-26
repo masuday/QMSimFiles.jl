@@ -206,6 +206,32 @@ function collect_qtlfreq(chrmap::QMSimChromosomeMap, chraf::QMSimChromosomeAllel
 end
 
 """
+    tbv = collect_tbv(individual)
+"""
+function collect_tbv(igset::Vector{QMSimIndividualGenome})
+   n = length(igset)
+   if isempty(size(igset[end].tbv))
+      # vector
+      tbv = zeros(n)
+      for i in eachindex(igset)
+         tbv[i] = igset[i].tbv
+      end
+   else
+      # matrix
+      ntr = size(igset[end].tbv)[1]
+      tbv = zeros(ntr,n)
+      for i in eachindex(igset)
+         tbv[:,i] .= igset[i].tbv
+      end
+   end
+   return tbv
+end
+
+function collect_tbv(g::QMSimPopulationGenome)
+   return collect_tbv(g.individual)
+end
+
+"""
     update_true_breeding_value!(gmap,individual)
 """
 function update_true_breeding_value!(gmap::QMSimMap,individual_genome::QMSimIndividualGenome)
