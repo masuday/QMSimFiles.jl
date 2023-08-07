@@ -83,7 +83,7 @@ end
 function is_mtmap(chrmap::QMSimChromosomeMap)
    ntr = chrmap.ntr
    nd = ndims(chrmap.effQTL)
-   if nd>2 | ntr>1
+   if nd>2 || ntr>1
       return true
    else
       return false
