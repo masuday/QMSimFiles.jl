@@ -11,7 +11,7 @@ The function supports a map file with multiple traits.
 function generate_effQTL!(gmap::QMSimMap, af::QMSimAlleleFrequency, dist_or_func, args...; expvar=1.0)
    rand_effQTL!(gmap, dist_or_func, args...)
    obsvar = var_effQTL(gmap, af)
-   scale = sqrt.(expvar ./ obsvar)
+   scale = sqrt.(0.5*expvar ./ obsvar)
    adjust_effQTL!(gmap, af, scale)
    return nothing
 end
@@ -19,7 +19,7 @@ end
 function generate_effQTL!(chrmap::QMSimChromosomeMap, chraf::QMSimChromosomeAlleleFrequency, dist_or_func, args...; expvar=1.0)
    rand_effQTL!(chrmap, dist_or_func, args...)
    obsvar = var_effQTL(chrmap, chraf)
-   scale = sqrt.(expvar ./ obsvar)
+   scale = sqrt.(0.5*expvar ./ obsvar)
    adjust_effQTL!(chrmap, chraf, scale)
    return nothing
 end
@@ -27,7 +27,7 @@ end
 function generate_effQTL!(effQTL, naQTL, freq, dist_or_func, args...; expvar=1.0)
    rand_effQTL!(effQTL, dist_or_func, args...)
    obsvar = var_effQTL(effQTL, naQTL, freq)
-   scale = sqrt.(expvar ./ obsvar)
+   scale = sqrt.(0.5*expvar ./ obsvar)
    adjust_effQTL!(effQTL, naQTL, freq, scale)
    return nothing
 end
@@ -84,6 +84,19 @@ function rand_effQTL!(effQTL::Array{Float64,3}, func::Function, args...)
    for j in 1:nQTL
       for i in 1:na
         val = func(args...)
+        for k in 1:ntr
+            effQTL[i,j,k] = val[k]
+         end
+      end
+   end
+   return nothing
+end
+
+function rand_effQTL!(effQTL::Array{Float64,3}, dist::T) where {T<:Distribution}
+   (na, nQTL, ntr) = size(effQTL)
+   for j in 1:nQTL
+      for i in 1:na
+        val = rand(dist)
         for k in 1:ntr
             effQTL[i,j,k] = val[k]
          end
@@ -235,7 +248,11 @@ end
     update_true_breeding_value!(gmap,individual)
 """
 function update_true_breeding_value!(gmap::QMSimMap,individual_genome::QMSimIndividualGenome)
-   individual_genome.tbv .= get_true_breeding_value(gmap,individual_genome)
+   if is_mtmap(gmap)
+      individual_genome.tbv .= get_true_breeding_value(gmap,individual_genome)
+   else
+      throw(ArgumentError("updated TBV not supported for the single trait case"))
+   end
    return nothing
 end
 
